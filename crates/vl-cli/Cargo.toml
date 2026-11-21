@@ -1,0 +1,16 @@
+[package]
+name = "vl-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "VectorLite CLI: serve, import, bench, and ingest commands."
+
+[dependencies]
+anyhow = { workspace = true }
+vl-core = { path = "../vl-core" }
+vl-index = { path = "../vl-index" }
+
+[[bin]]
+name = "vl-cli"
+path = "src/main.rs"

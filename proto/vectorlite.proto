@@ -1,0 +1,6 @@
+// VectorLite gRPC schema (populated in Phase 7).
+// 
+// syntax = "proto3";
+// package vectorlite.v1;
+//
+// service VectorLite { ... }

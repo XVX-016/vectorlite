@@ -1,0 +1,15 @@
+[package]
+name = "vl-index"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "VectorLite index implementations: brute-force, HNSW, and quantizers."
+
+[dependencies]
+thiserror = { workspace = true }
+vl-core = { path = "../vl-core" }
+
+[lib]
+name = "vl_index"
+path = "src/lib.rs"

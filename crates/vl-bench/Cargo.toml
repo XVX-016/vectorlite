@@ -1,0 +1,20 @@
+[package]
+name = "vl-bench"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "VectorLite benchmark harness: dataset loaders, recall and latency measurement."
+
+[dependencies]
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+vl-index = { path = "../vl-index" }
+
+[lib]
+name = "vl_bench"
+path = "src/lib.rs"
+
+[[bin]]
+name = "vl-bench"
+path = "src/main.rs"

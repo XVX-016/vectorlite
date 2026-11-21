@@ -1,0 +1,23 @@
+[package]
+name = "vl-server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "VectorLite server: Axum REST, Tonic gRPC, Prometheus metrics, and config."
+
+[dependencies]
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+vl-core = { path = "../vl-core" }
+vl-index = { path = "../vl-index" }
+vl-storage = { path = "../vl-storage" }
+vl-filter = { path = "../vl-filter" }
+
+[lib]
+name = "vl_server"
+path = "src/lib.rs"
+
+[[bin]]
+name = "vl-server"
+path = "src/main.rs"

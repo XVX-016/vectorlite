@@ -1,0 +1,14 @@
+[package]
+name = "vl-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "VectorLite core: vector types, distance kernels, and shared error definitions."
+
+[dependencies]
+thiserror = { workspace = true }
+
+[lib]
+name = "vl_core"
+path = "src/lib.rs"

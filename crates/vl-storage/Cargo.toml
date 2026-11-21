@@ -1,0 +1,14 @@
+[package]
+name = "vl-storage"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "VectorLite storage: WAL, segment files, mmap, snapshot and recovery."
+
+[dependencies]
+thiserror = { workspace = true }
+
+[lib]
+name = "vl_storage"
+path = "src/lib.rs"

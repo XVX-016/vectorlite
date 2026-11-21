@@ -1,0 +1,54 @@
+# Rust build artifacts
+/target/
+**/target/
+Cargo.lock
+
+# Data files (benchmark datasets, raw downloads)
+data/
+
+# ── Project planning & agent session files ────────────────────────────────────
+# The design document and agent rules file are local working files,
+# not part of the committed source tree.
+VectorLite*.md
+AGENTS.md
+agents.md
+
+# AI / IDE session reports and brain dumps (Antigravity, Copilot, etc.)
+.gemini/
+*.session.json
+*.session.md
+session-*.md
+session-*.json
+brain/
+*_report.md
+
+# ── IDE and OS ────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+dist/
+*.egg-info/
+
+# ── Node / web ────────────────────────────────────────────────────────────────
+web/node_modules/
+web/.next/
+web/dist/
+
+# ── Raw benchmark dataset files ───────────────────────────────────────────────
+# Committed results live under docs/benchmarks/ as JSON/CSV; raw binary
+# dataset files are downloaded locally and never committed.
+*.bin
+*.fvecs
+*.ivecs
+*.bvecs
