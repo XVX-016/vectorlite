@@ -1,7 +1,6 @@
 # Rust build artifacts
 /target/
 **/target/
-Cargo.lock
 
 # Data files (benchmark datasets, raw downloads)
 data/

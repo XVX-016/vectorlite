@@ -4,7 +4,11 @@
 //! neighbour search, and quantization (SQ8, PQ). All heavy work lives here;
 //! the server and CLI depend on this crate through the `SearchIndex` trait.
 
-/// Placeholder error type for index operations (populated in Phase 1).
+pub mod brute_force;
+
+pub use brute_force::BruteForceIndex;
+
+/// Error type for index operations.
 #[derive(Debug, thiserror::Error)]
 pub enum IndexError {
     /// Wraps a core-layer error.

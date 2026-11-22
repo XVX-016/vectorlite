@@ -9,6 +9,10 @@ description = "VectorLite index implementations: brute-force, HNSW, and quantize
 [dependencies]
 thiserror = { workspace = true }
 vl-core = { path = "../vl-core" }
+ordered-float = "4"
+
+[dev-dependencies]
+proptest = "1"
 
 [lib]
 name = "vl_index"

@@ -9,6 +9,9 @@ description = "VectorLite core: vector types, distance kernels, and shared error
 [dependencies]
 thiserror = { workspace = true }
 
+[dev-dependencies]
+proptest = "1"
+
 [lib]
 name = "vl_core"
 path = "src/lib.rs"

@@ -10,6 +10,10 @@ description = "VectorLite benchmark harness: dataset loaders, recall and latency
 anyhow = { workspace = true }
 thiserror = { workspace = true }
 vl-index = { path = "../vl-index" }
+vl-core = { path = "../vl-core" }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
 
 [lib]
 name = "vl_bench"
@@ -18,3 +22,7 @@ path = "src/lib.rs"
 [[bin]]
 name = "vl-bench"
 path = "src/main.rs"
+
+[[bench]]
+name = "distance"
+harness = false
