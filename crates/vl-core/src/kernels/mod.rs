@@ -17,6 +17,65 @@ pub mod neon;
 
 use crate::distance::DistanceKind;
 
+/// Function pointer type for an unchecked distance kernel.
+pub type DistanceKernelFn = fn(&[f32], &[f32]) -> f32;
+
+/// Resolve the fastest available unchecked distance kernel for the current CPU
+/// once at index construction time.
+pub fn resolve_kernel(kind: DistanceKind) -> DistanceKernelFn {
+    #[cfg(target_arch = "x86_64")]
+    {
+        if is_x86_feature_detected!("avx2") && is_x86_feature_detected!("fma") {
+            fn avx2_l2(a: &[f32], b: &[f32]) -> f32 {
+                // SAFETY: `resolve_kernel` verified AVX2 and FMA support on this CPU.
+                unsafe { avx2::l2_squared(a, b) }
+            }
+            fn avx2_ip(a: &[f32], b: &[f32]) -> f32 {
+                // SAFETY: `resolve_kernel` verified AVX2 and FMA support on this CPU.
+                unsafe { avx2::inner_product(a, b) }
+            }
+            fn avx2_cos(a: &[f32], b: &[f32]) -> f32 {
+                // SAFETY: `resolve_kernel` verified AVX2 and FMA support on this CPU.
+                unsafe { avx2::cosine_distance(a, b) }
+            }
+            return match kind {
+                DistanceKind::L2 => avx2_l2,
+                DistanceKind::InnerProduct => avx2_ip,
+                DistanceKind::Cosine => avx2_cos,
+            };
+        }
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    {
+        if std::arch::is_aarch64_feature_detected!("neon") {
+            fn neon_l2(a: &[f32], b: &[f32]) -> f32 {
+                // SAFETY: `resolve_kernel` verified NEON support on this CPU.
+                unsafe { neon::l2_squared(a, b) }
+            }
+            fn neon_ip(a: &[f32], b: &[f32]) -> f32 {
+                // SAFETY: `resolve_kernel` verified NEON support on this CPU.
+                unsafe { neon::inner_product(a, b) }
+            }
+            fn neon_cos(a: &[f32], b: &[f32]) -> f32 {
+                // SAFETY: `resolve_kernel` verified NEON support on this CPU.
+                unsafe { neon::cosine_distance(a, b) }
+            }
+            return match kind {
+                DistanceKind::L2 => neon_l2,
+                DistanceKind::InnerProduct => neon_ip,
+                DistanceKind::Cosine => neon_cos,
+            };
+        }
+    }
+
+    match kind {
+        DistanceKind::L2 => scalar::l2_squared_unrolled4,
+        DistanceKind::InnerProduct => scalar::inner_product_unrolled4,
+        DistanceKind::Cosine => scalar::cosine_distance_unrolled4,
+    }
+}
+
 /// Compute the distance between two equal-length f32 slices using the fastest
 /// available kernel for the current CPU without checking dimensions or finiteness.
 ///

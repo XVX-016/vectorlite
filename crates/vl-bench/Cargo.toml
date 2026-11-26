@@ -11,9 +11,25 @@ anyhow = { workspace = true }
 thiserror = { workspace = true }
 vl-index = { path = "../vl-index" }
 vl-core = { path = "../vl-core" }
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+csv = "1"
+hdrhistogram = "7"
+rayon = "1"
+sysinfo = "0.32"
+time = { version = "0.3", features = ["formatting"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_System_ProcessStatus", "Win32_System_Threading"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+libc = "0.2"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1"
+tempfile = "3"
 
 [lib]
 name = "vl_bench"

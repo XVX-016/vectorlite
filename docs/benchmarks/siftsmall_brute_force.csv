@@ -1,0 +1,2 @@
+timestamp,git_commit,rustc_version,cpu_model,os,dataset,metric,index,num_vectors,num_queries,dim,k,recall_at_k,p50_us,p95_us,p99_us,qps,qps_threads,build_time_secs,single_thread_total_secs
+2026-11-25T08:03:15.07802Z,1373688,rustc 1.100.0 (0ef1bc386 2026-11-09),Intel(R) Core(TM) i9-14900HX,Windows 11 (26200),siftsmall,L2,brute_force,10000,100,128,10,1.000000,104.319,163.967,197.119,36923.531,32,0.001,0.011

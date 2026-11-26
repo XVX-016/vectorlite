@@ -10,6 +10,7 @@ description = "VectorLite index implementations: brute-force, HNSW, and quantize
 thiserror = { workspace = true }
 vl-core = { path = "../vl-core" }
 ordered-float = "4"
+rayon = "1"
 
 [dev-dependencies]
 proptest = "1"

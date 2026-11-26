@@ -15,18 +15,22 @@
 use std::sync::Arc;
 
 use ordered_float::NotNan;
-use vl_core::{CoreError, Distance, VectorId};
+use vl_core::kernels::{resolve_kernel, DistanceKernelFn};
+use vl_core::{CoreError, Distance, DistanceKind, VectorId};
 
-use crate::IndexError;
+use crate::{IndexError, SearchIndex};
 
-/// An exact nearest-neighbour index backed by a linear scan.
+/// An exact nearest-neighbour index backed by a linear scan over a contiguous arena.
 ///
 /// Validates dimensions, finiteness, and metric constraints (such as non-zero norms for cosine)
-/// upon `insert` and at `search` entry, and executes inner distance calculations via the unchecked path.
+/// upon `insert` and at `search` entry, and executes inner distance calculations via a
+/// pre-resolved unchecked SIMD kernel function pointer.
 pub struct BruteForceIndex {
     dim: usize,
     distance: Arc<dyn Distance>,
-    vectors: Vec<(VectorId, Vec<f32>)>,
+    kernel: DistanceKernelFn,
+    data: Vec<f32>,
+    ids: Vec<VectorId>,
 }
 
 impl BruteForceIndex {
@@ -34,26 +38,41 @@ impl BruteForceIndex {
     ///
     /// All vectors inserted into this index must have exactly `dim` components.
     pub fn new(dim: usize, distance: Arc<dyn Distance>) -> Self {
+        let kernel = resolve_kernel(distance.kind());
         Self {
             dim,
             distance,
-            vectors: Vec::new(),
+            kernel,
+            data: Vec::new(),
+            ids: Vec::new(),
         }
     }
 
     /// The number of vectors currently stored.
     pub fn len(&self) -> usize {
-        self.vectors.len()
+        self.ids.len()
     }
 
     /// True if no vectors have been inserted yet.
     pub fn is_empty(&self) -> bool {
-        self.vectors.is_empty()
+        self.ids.is_empty()
     }
 
     /// The expected dimensionality of this index.
     pub fn dim(&self) -> usize {
         self.dim
+    }
+
+    /// The distance metric used by this index.
+    pub fn metric(&self) -> DistanceKind {
+        self.distance.kind()
+    }
+
+    /// Approximate heap and struct memory owned by this index, in bytes.
+    pub fn memory_bytes(&self) -> usize {
+        std::mem::size_of::<Self>()
+            + self.data.capacity() * std::mem::size_of::<f32>()
+            + self.ids.capacity() * std::mem::size_of::<VectorId>()
     }
 
     /// Insert a vector into the index.
@@ -73,7 +92,8 @@ impl BruteForceIndex {
         self.distance
             .validate_vector(&v)
             .map_err(IndexError::Core)?;
-        self.vectors.push((id, v));
+        self.data.extend_from_slice(&v);
+        self.ids.push(id);
         Ok(())
     }
 
@@ -95,7 +115,7 @@ impl BruteForceIndex {
     /// * [`IndexError::Core(CoreError::NonFiniteValue)`] – if query contains NaN or infinity.
     /// * [`IndexError::Core(CoreError::ZeroVector)`] – if cosine distance is used with a zero query vector.
     pub fn search(&self, query: &[f32], k: usize) -> Result<Vec<(VectorId, f32)>, IndexError> {
-        if self.vectors.is_empty() {
+        if self.ids.is_empty() {
             return Err(IndexError::Empty);
         }
         if query.len() != self.dim {
@@ -115,9 +135,9 @@ impl BruteForceIndex {
         let mut heap: std::collections::BinaryHeap<(NotNan<f32>, VectorId)> =
             std::collections::BinaryHeap::with_capacity(k + 1);
 
-        for (id, v) in &self.vectors {
+        for (id, v) in self.ids.iter().zip(self.data.chunks_exact(self.dim)) {
             // Unchecked call: dimensions, finiteness, and non-zero invariants are guaranteed
-            let dist = self.distance.compute_unchecked(query, v);
+            let dist = (self.kernel)(query, v);
             let not_nan =
                 NotNan::new(dist).map_err(|_| IndexError::Core(CoreError::NonFiniteValue))?;
             let candidate = (not_nan, *id);
@@ -147,6 +167,28 @@ impl BruteForceIndex {
     }
 }
 
+impl SearchIndex for BruteForceIndex {
+    fn insert(&mut self, id: VectorId, vector: Vec<f32>) -> Result<(), IndexError> {
+        BruteForceIndex::insert(self, id, vector)
+    }
+
+    fn search(&self, query: &[f32], k: usize) -> Result<Vec<(VectorId, f32)>, IndexError> {
+        BruteForceIndex::search(self, query, k)
+    }
+
+    fn len(&self) -> usize {
+        BruteForceIndex::len(self)
+    }
+
+    fn dim(&self) -> usize {
+        BruteForceIndex::dim(self)
+    }
+
+    fn metric(&self) -> DistanceKind {
+        BruteForceIndex::metric(self)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -172,8 +214,9 @@ mod tests {
 
     fn exact_top_k(idx: &BruteForceIndex, query: &[f32], k: usize) -> Vec<VectorId> {
         let mut all: Vec<(VectorId, f32)> = idx
-            .vectors
+            .ids
             .iter()
+            .zip(idx.data.chunks_exact(idx.dim))
             .map(|(id, v)| (*id, idx.distance.compute(query, v).unwrap()))
             .collect();
         all.sort_by(|a, b| {

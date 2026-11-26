@@ -1,0 +1,31 @@
+{
+  "git_commit": "1373688-dirty",
+  "rustc_version": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+  "cpu_model": "Intel(R) Core(TM) i9-14900HX",
+  "os": "Windows 11 (26200)",
+  "dataset": "sift1m",
+  "metric": "L2",
+  "index": "hnsw",
+  "index_params": {
+    "M": "16",
+    "M0": "32",
+    "ef_construction": "200",
+    "ef_search": "80",
+    "seed": "42"
+  },
+  "timestamp": "2026-11-25T10:08:33.1719855Z",
+  "num_vectors": 1000000,
+  "num_queries": 10000,
+  "dim": 128,
+  "k": 10,
+  "recall_at_k": 0.9837999999999844,
+  "recall_tie_aware": 0.9843999999999854,
+  "p50_us": 262.911,
+  "p95_us": 392.703,
+  "p99_us": 891.903,
+  "qps": 42384.57303264587,
+  "qps_threads": 32,
+  "build_time_secs": 718.7828622,
+  "single_thread_total_secs": 2.7726697,
+  "peak_rss_bytes": 1395306496
+}
